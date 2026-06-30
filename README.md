@@ -1,116 +1,65 @@
-# 기획 하네스 - 빠른 시작 가이드 (10분)
+# planning-harness (기획 하네스)
 
-> **목표**: 기획자가 명령어 한 줄로 상세기획 산출물을 자동 생성하는 환경
+> 기획자가 명령어 한 줄로 상세기획 산출물을 자동 생성하는, 규칙·가드레일이 박힌 AI 기획 루프.
+> **진실의 원천(SSOT)** 은 항상 [spec.md](spec.md) 이고, AI 운영 규칙은 [CLAUDE.md](CLAUDE.md) 다.
 
 ---
 
-## 🚀 빠른 시작 (5분)
+## 무엇인가
+일회성 프롬프트가 아니라, **로컬에 고정된 7개 스킬 + 가드레일**로 AI가 일관된 논리로
+기획 문서를 만들고 고치게 만든 "하네스(harness)". 산출물은 전부 `outputs/<날짜>/` 에 쌓이고,
+위험한 작업(요구사항 분해·테스트 케이스·Git 반영)은 **사람 승인 게이트**를 거친다.
 
-### 1단계: 환경 준비
-
+## 빠른 시작
 ```bash
-# 저장소 클론
 git clone https://github.com/feed-mina/planning-harness.git
 cd planning-harness
+# Claude Code(데스크톱 CLI/IDE) 또는 claude.ai 에서 이 폴더를 연다
+```
+그다음 spec.md 를 실제 기획 내용으로 채우고, 아래 슬래시 커맨드를 부른다.
 
-# Python 3.9+ 설치 확인
-python --version
+## 7개 스킬 (`.claude/commands/`)
+| 커맨드 | 하는 일 | 산출물 | 승인 |
+|---|---|---|---|
+| `/search-documents <주제>` | 근거 자료 검색 | `outputs/<날짜>/docs-found.md` | |
+| `/split-requirements <기능>` | 요구사항 분해 + 의존성 | `requirements.md` | ⚠️ |
+| `/sequence-diagram <로직>` | Mermaid 시퀀스 다이어그램 | `sequence.mermaid` | |
+| `/user-flow <시나리오>` | Mermaid 사용자 플로우 | `user-flow.mermaid` | |
+| `/logic-check <기능>` | 정상/예외/보안/성능 테스트 케이스 | `logic-check.md` | ⚠️ |
+| `/release-note <버전>` | 변경사항 요약 | `release-note.md` | |
+| `/git-project-sync <날짜>` | 회의록 할 일 → GitHub Issues + Project | `git-sync.json` | ⚠️ |
+
+⚠️ = 사람 승인 필요. 전형적 체인:
+`/search-documents` → `/split-requirements` → `/sequence-diagram`·`/user-flow` → `/logic-check` → `/release-note` → `/git-project-sync`
+
+## GitHub 연동
+- **기본: [gh CLI](https://cli.github.com/)** — `gh auth login` 한 번이면 끝. `/git-project-sync` 가 이슈/Project 를 다룬다.
+- **보조: Python REST** — gh 가 없는 환경(일부 CI 등)용. `scripts/` 의 Python 경로는 **Phase 2 산출물**(아래 로드맵).
+
+## 회의록 → 추적 파이프라인
+```
+녹음 → STT → meetings/raw/YYYY-MM-DD_meeting.txt  (git 추적 안 함)
+      → meetings/summary/YYYY-MM-DD_meeting.md     (templates/meeting_template.md 기반)
+      → /git-project-sync YYYY-MM-DD  → Issues + Project (dry-run → 승인 → 적용)
 ```
 
-### 2단계: 기획 루프 시작
-
-```bash
-# 1️⃣ 회의록 준비
-cp planning-harness/templates/meeting_template.md meetings/summary/2026-06-30_meeting.md
-
-# 2️⃣ GitHub Issues 자동 생성
-python scripts/create_github_issues.py 2026-06-30
-
-# 3️⃣ Git Project V2 동기화
-python scripts/sync_project.py --labels from-meeting,todo
-```
-
-### 3단계: 결과 확인
-
-✅ GitHub Issues 생성됨
-✅ Project V2에 자동 추가됨
-✅ 완료!
-
----
-
-## 📋 7개 스킬 사용법
-
-### 1️⃣ `/search-documents` - 근거 자료 검색
-```bash
-"/search-documents 사용자 인증 프로세스"
-→ 기존 문서 + Issues 자동 검색
-```
-
-### 2️⃣ `/split-requirements` - 요구사항 분해
-```bash
-"/split-requirements 사용자 대시보드 기능"
-→ Phase 별 요구사항 + 의존성 그래프
-```
-
-### 3️⃣ `/sequence-diagram` - 시퀀스 다이어그램
-```bash
-"/sequence-diagram 로그인 플로우"
-→ Mermaid 다이어그램 생성
-```
-
-### 4️⃣ `/user-flow` - 사용자 플로우
-```bash
-"/user-flow 회원가입 프로세스"
-→ 사용자 경로 시각화
-```
-
-### 5️⃣ `/logic-check` - 테스트 케이스
-```bash
-"/logic-check 결제 기능"
-→ 테스트 케이스 자동 도출
-```
-
-### 6️⃣ `/release-note` - 변경사항 요약
-```bash
-"/release-note v1.0.0 로그인 개선"
-→ Slack 용 요약 생성
-```
-
-### 7️⃣ `/git-project-sync` - Project V2 동기화
-```bash
-"/git-project-sync 2026-06-30"
-→ Issues 자동 생성 + Project 추가
-```
-
----
-
-## 📁 폴더 구조
-
+## 폴더 구조
 ```
 planning-harness/
-├── CLAUDE.md              ← AI 규칙서
-├── spec.md                ← 진실의 원천
-├── README.md              ← 이 파일
-├── SETUP.md               ← 초기 설정
-├── .claude/commands/      ← 7개 스킬
-├── outputs/               ← 산출물 (자동)
-└── templates/             ← 템플릿
+├── CLAUDE.md              ← AI 규칙서 (4대 구성요소 + 스킬 규약)
+├── spec.md               ← 진실의 원천 (SSOT)
+├── README.md / SETUP.md  ← 이 파일 / 설정 가이드
+├── .claude/commands/     ← 7개 스킬 (구현됨)
+├── templates/            ← meeting_template.md
+├── meetings/             ← raw(비공개) / summary
+└── outputs/<날짜>/        ← 스킬 산출물
 ```
 
----
+## 로드맵
+- ✅ **Phase 0–1**: 문서 정리 + 7개 스킬 구현
+- ⬜ **Phase 2**: `/git-project-sync` 엔진 — KIBA `lib.sh/board.sh/reconcile.sh` 이식 + Python 보조 스크립트
+- ⬜ **Phase 3**: 공통 모듈화 — Claude Code **플러그인** 패키징 (다른 개발 프로젝트에 이식)
+- ⬜ **Phase 4**: 리모트·모바일 — GitHub Actions `@claude` 봇 + PR 승인 게이트
+- ⬜ **Phase 5**: 다운스트림(quali-fit 형) 프로젝트 관통 테스트
 
-## ✅ 체크리스트
-
-```
-□ CLAUDE.md 읽음
-□ spec.md 이해함
-□ 환경 변수 설정함
-□ 첫 회의록 작성함
-□ Issues 자동 생성 성공
-□ Project V2 동기화 확인
-```
-
----
-
-**성공을 기원합니다! 🚀**
-# planning-harness
+자세한 분석·플랜: [outputs/repo-analysis-and-plan.md](outputs/repo-analysis-and-plan.md)

@@ -1,0 +1,35 @@
+sequenceDiagram
+    actor User as 기획자
+    participant Cmd as /git-project-sync
+    participant Parse as parse_actions.py
+    participant Engine as create_issues.sh
+    participant GH as GitHub (gh CLI)
+    participant Proj as Project V2
+
+    User->>Cmd: /git-project-sync 2026-06-30
+    Cmd->>GH: gh auth status
+    alt 미인증
+        GH-->>Cmd: not logged in
+        Cmd-->>User: gh auth login 안내 후 중단
+    else 인증됨
+        Cmd->>Parse: summary.md 의 ## 할 일 파싱
+        Parse-->>Cmd: [ActionItem...]
+        loop 각 할 일 (dry-run)
+            Cmd->>GH: issue list --search "title in:title"
+            alt 이미 존재
+                GH-->>Cmd: 중복 → skipped
+            else 신규
+                Cmd-->>User: 제안(근거 라인 포함)
+            end
+        end
+        Cmd-->>User: 제안 목록 + 승인 요청
+        User->>Cmd: 승인 (--yes)
+        loop 승인된 할 일
+            Cmd->>Engine: create_issues.sh --yes
+            Engine->>GH: issue create (labels, body=요약만)
+            GH-->>Engine: issue URL + node_id
+            Engine->>Proj: item-add + Status=Todo / Priority
+            Proj-->>Engine: item id
+        end
+        Engine-->>User: outputs/git-sync.json + 보드 링크
+    end

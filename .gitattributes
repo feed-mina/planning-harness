@@ -1,0 +1,8 @@
+# 쉘/파이썬 스크립트는 항상 LF (Windows에서 작업해도 Linux/CI에서 실행 가능하게)
+*.sh   text eol=lf
+*.py   text eol=lf
+*.env  text eol=lf
+
+# 문서/머메이드는 기본 정규화
+*.md       text
+*.mermaid  text

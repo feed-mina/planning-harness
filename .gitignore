@@ -1,0 +1,16 @@
+# Cloned reference repos (tracked in their own upstreams, not here)
+/llm-app-lab/
+/project_management_with_ai_agent/
+/quali-fit/
+
+# Private meeting transcripts (never commit raw notes)
+/meetings/raw/*
+!/meetings/raw/.gitkeep
+
+# Python
+__pycache__/
+*.pyc
+
+# OS / editor
+.DS_Store
+Thumbs.db

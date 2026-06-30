@@ -1,0 +1,20 @@
+flowchart TD
+    A[/git-project-sync 날짜/] --> B{gh 인증?}
+    B -->|아니오| C[gh auth login 안내] --> Z[중단·쓰기 없음]
+    B -->|예| D{summary.md 존재?}
+    D -->|아니오| E[회의록 없음 안내] --> Z
+    D -->|예| F[## 할 일 파싱]
+    F --> G{할 일 있음?}
+    G -->|아니오| H[할 일 없음 안내] --> Z
+    G -->|예| I[각 항목 중복 검사]
+    I --> J[dry-run 제안 목록 출력]
+    J --> K{사용자 승인?}
+    K -->|거절| Z
+    K -->|승인| L[--yes 적용]
+    L --> M[이슈 생성 + Project 추가]
+    M --> N{필드 옵션 존재?}
+    N -->|예| O[Status=Todo / Priority 설정]
+    N -->|아니오| P[경고 후 건너뜀]
+    O --> Q[git-sync.json 리포트]
+    P --> Q
+    Q --> R[보드 링크 보고]
