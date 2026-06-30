@@ -15,7 +15,9 @@ allowed-tools: Bash(gh:*), Read, Glob, Grep
 - 형식: `- [ ] <할 일> — @담당자 ~마감일 [priority:High|Medium|Low]`
 
 ## 연동 방식 — 실엔진은 `scripts/` (Phase 2 구현 완료)
-대상 설정은 `scripts/config.env` (OWNER/PROJECT_NUMBER/REPO/PROJECT_TITLE/DEFAULT_LABELS).
+**스크립트 경로**: 플러그인으로 설치돼 실행되면 `${CLAUDE_PLUGIN_ROOT}/scripts/`, 이 저장소에서 직접 작업하면 `./scripts/`. 아래 `scripts/` 는 둘 중 맞는 경로로 해석한다.
+
+**대상 설정**: 기본값은 `scripts/config.env`. **다른 프로젝트에서 쓸 때는 그 프로젝트 루트의 `.harness/config.env`** 가 우선한다(없으면 `templates/harness.config.env` 복사). 환경변수(OWNER/PROJECT_NUMBER/REPO…)가 있으면 최우선.
 
 1. **인증 확인**: `gh auth status`. 미인증이면 멈추고 `gh auth login && gh auth refresh -s project,read:project` 안내. gh 불가 환경이면 보조 경로 `python scripts/github_sync.py` (`GITHUB_TOKEN` 필요).
 2. **현재 보드 관찰 (읽기 전용)**: `bash scripts/board.sh`.

@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "planning-harness",
+  "displayName": "기획 하네스 (Planning Harness)",
+  "version": "0.3.0",
+  "description": "기획자용 상세기획 자동화 하네스 — 7개 스킬(요구사항 분해·시퀀스/플로우·테스트케이스·릴리스노트) + 회의록→GitHub Issue/Project 동기화 엔진. 모든 위험 작업은 사람 승인 게이트.",
+  "author": {
+    "name": "feed-mina",
+    "url": "https://github.com/feed-mina"
+  },
+  "homepage": "https://github.com/feed-mina/planning-harness",
+  "repository": "https://github.com/feed-mina/planning-harness",
+  "license": "MIT",
+  "keywords": ["planning", "spec", "requirements", "github-projects", "meeting-notes", "korean"],
+  "commands": ["./.claude/commands/"]
+}

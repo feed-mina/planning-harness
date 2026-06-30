@@ -57,9 +57,11 @@ planning-harness/
 
 ## 로드맵
 - ✅ **Phase 0–1**: 문서 정리 + 7개 스킬 구현
-- ⬜ **Phase 2**: `/git-project-sync` 엔진 — KIBA `lib.sh/board.sh/reconcile.sh` 이식 + Python 보조 스크립트
-- ⬜ **Phase 3**: 공통 모듈화 — Claude Code **플러그인** 패키징 (다른 개발 프로젝트에 이식)
+- ✅ **Phase 2**: `/git-project-sync` 엔진 — KIBA `lib.sh/board.sh/reconcile.sh` 이식 + Python 보조
+- ✅ **Phase 3**: 공통 모듈화 — Claude Code **플러그인** 패키징 → [PLUGIN.md](PLUGIN.md)
 - ⬜ **Phase 4**: 리모트·모바일 — GitHub Actions `@claude` 봇 + PR 승인 게이트
 - ⬜ **Phase 5**: 다운스트림(quali-fit 형) 프로젝트 관통 테스트
+
+> 다른 프로젝트에 설치: `claude plugin marketplace add feed-mina/planning-harness` → 자세한 건 [PLUGIN.md](PLUGIN.md)
 
 자세한 분석·플랜: [outputs/repo-analysis-and-plan.md](outputs/repo-analysis-and-plan.md)

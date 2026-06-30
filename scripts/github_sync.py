@@ -17,20 +17,26 @@ API = "https://api.github.com"
 GQL = "https://api.github.com/graphql"
 
 
+def _merge_env_file(cfg, path):
+    if not path or not os.path.exists(path):
+        return
+    for line in open(path, encoding="utf-8"):
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        k, v = line.split("=", 1)
+        cfg[k.strip()] = v.split("#")[0].strip().strip('"').strip("'")
+
+
 def load_config():
+    """우선순위: 환경변수 > 프로젝트 .harness/config.env > 플러그인 기본 config.env."""
     cfg = {}
     here = os.path.dirname(os.path.abspath(__file__))
-    path = os.path.join(here, "config.env")
-    if os.path.exists(path):
-        for line in open(path, encoding="utf-8"):
-            line = line.strip()
-            if not line or line.startswith("#") or "=" not in line:
-                continue
-            k, v = line.split("=", 1)
-            cfg[k.strip()] = v.split("#")[0].strip().strip('"').strip("'")
-    # 환경변수 override
+    _merge_env_file(cfg, os.path.join(here, "config.env"))          # 기본값
+    proj = os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd()      # 프로젝트 override
+    _merge_env_file(cfg, os.path.join(proj, ".harness", "config.env"))
     for k in ("OWNER", "PROJECT_NUMBER", "REPO", "PROJECT_TITLE", "DEFAULT_LABELS"):
-        if os.environ.get(k):
+        if os.environ.get(k):                                       # 환경변수 최우선
             cfg[k] = os.environ[k]
     return cfg
 

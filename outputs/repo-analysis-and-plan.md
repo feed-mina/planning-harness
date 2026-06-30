@@ -99,12 +99,12 @@ flowchart TB
 - [x] `scripts/README.md`, `/git-project-sync` 커맨드를 실엔진에 연결
 - 멱등·중복방지·노드ID 런타임해석·회의록 원문 비노출 가드레일 반영
 
-### Phase 3 — 공통 모듈화 (이식성) (1일)
-다른 개발 프로젝트가 이 하네스를 끌어다 쓰는 방법. **택1 추천: Claude Code 플러그인 / 템플릿 + 설치 스크립트**
-- 옵션 A (추천): `.claude/` 번들(스킬+규칙+scripts)을 **install 스크립트**로 대상 repo에 복사·갱신
-- 옵션 B: planning-harness를 **git submodule** 로 각 프로젝트에 추가
-- 옵션 C: **Claude Code plugin** 패키징(마켓플레이스/로컬)
-- 공통: `spec.md` 와 `config.env` 만 프로젝트별로 override
+### Phase 3 — 공통 모듈화 (Claude Code 플러그인) ✅ 완료
+- [x] `.claude-plugin/plugin.json` (commands=`./.claude/commands` 재사용, 중복 0) + `marketplace.json` (source ".")
+- [x] `claude plugin validate .` 통과
+- [x] 프로젝트별 설정 override: cwd `.harness/config.env` > 플러그인 기본 (lib.sh/github_sync.py), 실제 동작 검증(acme-corp 테스트)
+- [x] `templates/harness.config.env`, `PLUGIN.md` (설치/사용 가이드)
+- 설치: `claude plugin marketplace add feed-mina/planning-harness` → `install planning-harness@feed-mina-harness`
 
 ### Phase 4 — 리모트 + 모바일 + 봇 (1일)
 - **GitHub Actions + Claude Code action**: 이슈/PR 코멘트에 `@claude ...` → 하네스 스킬 실행 → PR 생성 (모바일 GitHub 앱에서 그대로 트리거)

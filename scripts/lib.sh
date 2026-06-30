@@ -8,6 +8,13 @@ _LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck disable=SC1091
 source "$_LIB_DIR/config.env"
 
+# 프로젝트별 override: 설치된 플러그인의 config.env 는 기본값이고,
+# 대상 프로젝트는 자기 작업폴더의 .harness/config.env 로 덮어쓴다.
+# (플러그인 본체를 수정하지 않고 OWNER/PROJECT/REPO 를 프로젝트마다 다르게)
+for _ovr in "${CLAUDE_PROJECT_DIR:-}/.harness/config.env" "$PWD/.harness/config.env"; do
+  [[ -n "$_ovr" && -f "$_ovr" ]] && { source "$_ovr"; break; }
+done
+
 # Windows 콘솔 코드페이지(cp949 등)와 무관하게 python 입출력을 UTF-8 로 강제.
 # (한글 제목이 cp949 로 인코딩돼 손상되는 것을 방지)
 export PYTHONUTF8=1
