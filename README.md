@@ -10,7 +10,28 @@
 기획 문서를 만들고 고치게 만든 "하네스(harness)". 산출물은 전부 `outputs/<날짜>/` 에 쌓이고,
 위험한 작업(요구사항 분해·테스트 케이스·Git 반영)은 **사람 승인 게이트**를 거친다.
 
-## 빠른 시작
+## 설치
+
+### 방법 A — 플러그인으로 설치 (다른 프로젝트에서, 권장)
+이 저장소는 Claude Code **마켓플레이스 + 플러그인**이다. 어느 프로젝트에서든 설치해 7개 스킬을 쓴다.
+```bash
+# 1) 마켓플레이스 추가
+claude plugin marketplace add feed-mina/planning-harness
+
+# 2) 플러그인 설치
+claude plugin install planning-harness@feed-mina-harness
+```
+설치하면 `/search-documents` … `/git-project-sync` 7개 스킬이 그 프로젝트에서 뜬다.
+
+**프로젝트별 설정** (GitHub 동기화용): 대상 프로젝트 루트에 `.harness/config.env` 생성
+```bash
+mkdir -p .harness
+cp "$(claude plugin root planning-harness)/templates/harness.config.env" .harness/config.env
+# OWNER / PROJECT_NUMBER / REPO 채우기  (우선순위: 환경변수 > .harness/config.env > 플러그인 기본)
+```
+> 전체 가이드: [PLUGIN.md](PLUGIN.md)
+
+### 방법 B — 저장소를 직접 열기 (개발·dogfooding)
 ```bash
 git clone https://github.com/feed-mina/planning-harness.git
 cd planning-harness
