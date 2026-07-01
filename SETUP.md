@@ -90,7 +90,7 @@ pip install -r requirements.txt
 
 > **기본 경로는 gh CLI 다.** 아래 3-A 만 하면 `/git-project-sync` 가 동작한다.
 > Python REST(토큰/환경변수) 경로는 gh 가 없는 환경을 위한 **보조**이며, 관련 스크립트는
-> **Phase 2 산출물**이다(아직 없음). 지금은 3-A 만 따라도 된다.
+> **Phase 2 산출물**로 구현돼 있다. 일반 사용자는 3-A 만 따라도 된다.
 
 ### 3-A. (기본) gh CLI 인증 — 권장
 
@@ -231,10 +231,21 @@ EOF
 - **dry-run 제안 목록**을 먼저 보여주고, "승인" 전까지 아무것도 쓰지 않음
 - 승인하면 `gh` 로 Issues 생성 + Project 추가, 결과는 `outputs/<날짜>/git-sync.json`
 
-### 5-3. (보조) Python 경로 — Phase 2 예정
+### 5-3. (보조) Python 경로 — gh 불가 환경
 
-`scripts/` 의 Python REST 스크립트는 아직 없다(Phase 2 산출물). gh 가 안 되는 환경에서만
-필요하며, 구현 후 이 절에 사용법을 추가한다.
+`scripts/github_sync.py` 는 gh 가 안 되는 환경에서만 사용한다.
+
+```bash
+export GITHUB_TOKEN=ghp_xxx
+python scripts/github_sync.py 2026-06-30          # dry-run
+python scripts/github_sync.py 2026-06-30 --yes    # 승인 후 적용
+```
+
+승인된 기획 산출물을 개발 repo 로 넘기려면:
+
+```
+/dev-handoff owner/dev-repo "승인된 기능"
+```
 
 ---
 
@@ -326,10 +337,10 @@ else
 fi
 
 # 4. Scripts 확인
-if [ -f "scripts/create_github_issues.py" ]; then
-    echo "✓ create_github_issues.py: 존재"
+if [ -f "scripts/github_sync.py" ] && [ -f "scripts/parse_actions.py" ]; then
+    echo "✓ Python 보조 스크립트: 존재"
 else
-    echo "✗ create_github_issues.py: 없음"
+    echo "✗ Python 보조 스크립트: 없음"
     exit 1
 fi
 
@@ -379,7 +390,7 @@ export GITHUB_TOKEN="ghp_xxxxx"
 2. 📋 **README.md 읽기** (기본 사용법)
 3. 📚 **CLAUDE.md 읽기** (AI 규칙서)
 4. ✍️ **spec.md 작성** (첫 기획)
-5. 🚀 **7개 스킬 연습**
+5. 🚀 **8개 스킬 연습**
 
 ---
 

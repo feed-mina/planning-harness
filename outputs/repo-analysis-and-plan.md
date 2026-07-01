@@ -1,6 +1,7 @@
 # planning-harness — 현황 분석 & 목표 플랜
 
 > 작성일: 2026-06-30 · 작성: Claude · 진실의 원천: [spec.md](../spec.md)
+> 상태: 초기 분석 스냅샷입니다. 현재 저장소는 8개 스킬(`/dev-handoff` 포함)과 Phase 4 원격/모바일 개발 봇 스캐폴드를 포함합니다. 최신 설계는 [docs/remote-dev-platform.md](../docs/remote-dev-platform.md) 를 보세요.
 
 ---
 

@@ -21,7 +21,7 @@ Claude, spec.md를 참고해서 다음을 진행해줘:
 ```
 
 ### 2. Tool Definition (도구 정의)
-**목표**: 정해진 7개 스킬만 사용해 일관성 있는 산출물 생성
+**목표**: 정해진 8개 스킬만 사용해 일관성 있는 산출물 생성과 개발 핸드오프 수행
 
 정해진 스킬:
 - `/search-documents` — 근거 자료 검색
@@ -31,11 +31,12 @@ Claude, spec.md를 참고해서 다음을 진행해줘:
 - `/logic-check` — 예외·테스트 케이스
 - `/release-note` — 변경사항 요약
 - `/git-project-sync` — Git Issue & Project 생성
+- `/dev-handoff` — 승인된 기획을 개발 repo 이슈/@claude PR 작업으로 연결
 
 **규칙**:
-- 이 7개 스킬 외에 다른 작업은 하지 않음
+- 이 8개 스킬 외에 다른 작업은 하지 않음
 - 각 스킬의 입출력 규약을 정확히 따름
-- 스킬 체인: 보통 `/search-documents` → `/split-requirements` → `/sequence-diagram`/`/user-flow` → `/logic-check` → `/release-note`
+- 스킬 체인: 보통 `/search-documents` → `/split-requirements` → `/sequence-diagram`/`/user-flow` → `/logic-check` → `/release-note` → `/git-project-sync` → `/dev-handoff`
 
 ### 3. Guardrails (가드레일)
 **목표**: 위험·불확실한 작업은 항상 사람이 승인 후 진행
@@ -44,6 +45,7 @@ Claude, spec.md를 참고해서 다음을 진행해줘:
 - [ ] `/split-requirements` 최종 결과 (변경사항이 크면 사람이 검토 필수)
 - [ ] `/logic-check`의 테스트 케이스 (비즈니스 요구사항과 부합하는지 확인)
 - [ ] `/git-project-sync`로 Git Issue·Project 반영 (실제 생성 전 확인)
+- [ ] `/dev-handoff`로 개발 repo 이슈 생성 또는 `@claude` 트리거 제안 (실제 생성 전 확인)
 
 **승인 전 Claude의 역할**:
 ```
@@ -273,6 +275,22 @@ flowchart TD
 - 담당자가 실제로 가능한가?
 - 마감일이 현실적인가?
 
+### /dev-handoff
+**입력**: 대상 개발 repo + 승인된 기능/산출물
+**출력**: `dev-handoff.md` (개발 repo 이슈 본문 + 추천 `@claude` 트리거)
+**프로세스**:
+1. `spec.md` 와 관련 `outputs/<날짜>/` 산출물 확인
+2. 개발 repo 이슈 본문으로 문제·범위·인수조건·테스트 기준 정리
+3. dry-run 제안 출력
+4. 승인 후에만 `gh issue create --repo <target>` 실행
+5. 개발 repo 의 Claude Code Action 이 `@claude` 댓글/라벨로 branch + PR 생성
+
+**승인 전 확인**:
+- 대상 repo 가 정확한가?
+- 구현 범위가 충분히 작고 테스트 가능한가?
+- raw 회의록이나 민감정보가 포함되지 않았는가?
+- 봇이 merge/deploy 없이 PR까지만 만들도록 명시했는가?
+
 ---
 
 ## 📌 기본 프로세스
@@ -285,12 +303,14 @@ flowchart TD
 5. **검증**: `/logic-check` 실행 (승인 필요)
 6. **공유**: `/release-note` 실행
 7. **추적**: `/git-project-sync` 실행 (승인 필요)
+8. **개발 핸드오프**: `/dev-handoff` 실행 (승인 필요)
 
 ### 회의록 자동화
 1. 녹음 → STT → `meetings/raw/YYYY-MM-DD_meeting.txt`
 2. `scripts/summarize_meeting.py` → `meetings/summary/YYYY-MM-DD_meeting.md`
 3. 회의록의 "## 할 일" 파싱
 4. `/git-project-sync` 실행 → Issues + Project 생성
+5. 승인된 항목은 `/dev-handoff` → 개발 repo Issue → `@claude` PR 생성
 
 ---
 
@@ -298,8 +318,9 @@ flowchart TD
 
 ❌ **다음은 절대 하지 않기**:
 - spec.md 없이 작업 진행 (항상 "진실의 원천" 확인)
-- 7개 스킬 외의 산출물 생성 (이탈 방지)
+- 8개 스킬 외의 산출물 생성 (이탈 방지)
 - 사용자 승인 없이 Git Issue 생성 (역할 분담 유지)
+- 사용자 승인 없이 개발 repo 이슈 생성, `@claude` 트리거, PR/배포 수행
 - 기존 산출물 무시하고 새로 작성 (기존 문서 활용)
 - 모호한 상황에서 결정 (항상 사용자에게 확인)
 
@@ -310,3 +331,4 @@ flowchart TD
 - `README.md` — 사용 가이드
 - `meetings/README.md` — 회의록 관리
 - `scripts/` — 자동화 스크립트
+- `docs/remote-dev-platform.md` — 원격·모바일·개발 봇 운영 설계

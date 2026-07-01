@@ -1,0 +1,49 @@
+name: Claude Dev Bot
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+  pull_request_review:
+    types: [submitted]
+  issues:
+    types: [opened, assigned, labeled]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  id-token: write
+  actions: read
+
+jobs:
+  claude:
+    name: Respond to approved planning/dev triggers
+    runs-on: ubuntu-latest
+    steps:
+      - name: Claude Code
+        uses: anthropics/claude-code-action@v1
+        with:
+          # Use one authentication method.
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+
+          # Default comment trigger. Mobile GitHub comments can use:
+          #   @claude implement this issue and open a PR
+          trigger_phrase: "@claude"
+
+          # Optional issue triggers.
+          label_trigger: "claude"
+          assignee_trigger: "claude"
+
+          # Install planning-harness so target repos can reuse planning commands.
+          plugin_marketplaces: "https://github.com/feed-mina/planning-harness.git"
+          plugins: "planning-harness@feed-mina-harness"
+
+          branch_prefix: "claude/"
+          additional_permissions: |
+            actions: read
+
+          claude_args: |
+            --max-turns 20

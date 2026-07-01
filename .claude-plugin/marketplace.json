@@ -1,5 +1,4 @@
 {
-  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
   "name": "feed-mina-harness",
   "owner": {
     "name": "feed-mina",
@@ -13,10 +12,10 @@
     {
       "name": "planning-harness",
       "source": "./",
-      "description": "7개 기획 스킬 + 회의록→GitHub Issue/Project 동기화 엔진 (사람 승인 게이트)",
-      "version": "0.3.0",
+      "description": "8개 기획/핸드오프 스킬 + 회의록→GitHub Issue/Project 동기화 엔진 + 개발 repo @claude 봇 템플릿 (사람 승인 게이트)",
+      "version": "0.4.0",
       "category": "productivity",
-      "tags": ["planning", "github-projects", "requirements", "korean"]
+      "tags": ["planning", "github-projects", "github-actions", "requirements", "korean"]
     }
   ]
 }
