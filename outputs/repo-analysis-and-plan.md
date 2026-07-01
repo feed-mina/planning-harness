@@ -22,7 +22,7 @@
 | repo | 이 프로젝트에 주는 의미 | 핵심 차용 포인트 |
 |---|---|---|
 | **project_management_with_ai_agent** (KIBA) | 🎯 **우리가 만들려는 엔진의 정답지.** 회의록 → GitHub Projects 보드 동기화 + 사람 승인 루프 | `scripts/lib.sh·board.sh·reconcile.sh` (gh CLI 기반, ID 하드코딩 없이 런타임 해석), `CLAUDE.md`의 Confirmation Policy |
-| **quali-fit** (KIBA) | 🎯 **하네스가 관리할 "다운스트림 개발 프로젝트"의 표본.** 실제 제품 + 홈랩 배포 | `.github/workflows/deploy.yml` (Actions→SSH→k3s GitOps), branch→PR→merge 규율, `docs/index.html` 진행 로그 |
+| **kiba_2026** (KIBA) | 🎯 **하네스가 관리할 "다운스트림 개발 프로젝트"의 표본.** 첫 실제 기능 검증 대상 저장소 | `feed-mina/kiba_2026` 기반 이슈/프로젝트 연동 검증 |
 | **llm-app-lab** | LLM 앱 구축 학습 랩 | GitHub Pages 워크플로, 참고 자료 |
 
 ### 1-3. ⚠️ 문서 ↔ 실제 불일치 (지금 가장 큰 갭)
@@ -61,7 +61,7 @@ flowchart TB
     subgraph 리모트["리모트 실행"]
       GA["GitHub Actions<br/>@claude 봇"]
     end
-    subgraph 다운스트림["개발 프로젝트들 (quali-fit형)"]
+    subgraph 다운스트림["개발 프로젝트들 (kiba_2026 중심)"]
       ISS[Git Issues]
       PRJ[Git Project V2]
       DEP["홈랩 배포<br/>Actions→SSH→k3s"]
@@ -108,18 +108,18 @@ flowchart TB
 
 ### Phase 4 — 리모트 + 모바일 + 봇 (1일)
 - **GitHub Actions + Claude Code action**: 이슈/PR 코멘트에 `@claude ...` → 하네스 스킬 실행 → PR 생성 (모바일 GitHub 앱에서 그대로 트리거)
-- 모든 변경은 **PR 승인 게이트**(quali-fit 규율: main 직접 커밋 금지)
+- 모든 변경은 **PR 승인 게이트**(kiba_2026 규율: main 직접 커밋 금지)
 - (선택) 홈랩에 **OpenCode 셀프호스트**로 모바일 웹 코딩 환경 — rsgm.dev 패턴
 
 ### Phase 5 — 다운스트림 연결 검증 (반나절)
-- quali-fit 형 프로젝트 1개에 하네스 설치 → 기획→이슈→프로젝트→(홈랩 배포)까지 1회 관통 테스트
+- kiba_2026 프로젝트에 하네스 설치 → 기획→이슈→프로젝트→(배포)까지 1회 관통 테스트
 - `/release-note` 로 마무리, 진행 로그 페이지 갱신
 
 ---
 
 ## 4. 지금 결정이 필요한 것 (사용자 확인)
 
-1. **GitHub 연동 방식**: gh CLI로 통일? (권장) vs SETUP의 Python REST 유지?
-2. **공통 모듈 방식**: 설치 스크립트(A) / submodule(B) / 플러그인(C) 중 무엇?
-3. **첫 시드 기획**: 하네스를 검증할 첫 실제 기능은? (예: quali-fit의 다음 이슈)
-4. **착수 범위**: Phase 1(스킬 구현)부터 바로 시작할지?
+1. **GitHub 연동 방식**: gh CLI로 통일 (권장), Python REST는 보조 경로 유지
+2. **공통 모듈 방식**: 플러그인(C) 채택
+3. **첫 시드 기획**: 하네스를 검증할 첫 실제 기능 저장소는 `https://github.com/feed-mina/kiba_2026`
+4. **착수 범위**: Phase 1(스킬 구현)부터 바로 시작
