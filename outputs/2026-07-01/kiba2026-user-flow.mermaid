@@ -1,0 +1,42 @@
+flowchart TD
+    A([기획자: 기획 필요]) --> B{이미 harness 설치됨?}
+
+    B -->|아니오| C[config.env 작성\nOWNER / PROJECT_NUMBER / REPO]
+    C --> D[ANTHROPIC_API_KEY 시크릿 추가\nkiba_2026 Settings]
+    D --> E[harness-bot.yml 커밋\ntemplates/harness-bot.yml 복사]
+    E --> F[설치 완료 ✅]
+
+    B -->|예| F
+
+    F --> G[이슈·PR 코멘트 작성\n@claude /스킬명 args]
+
+    G --> H{스킬 종류}
+
+    H -->|/search-documents| I[문서 검색\ndocs-found.md → PR]
+    H -->|/split-requirements| J[요구사항 분해\nrequirements.md → PR ⚠️승인]
+    H -->|/sequence-diagram| K[시퀀스 다이어그램\nsequence.mermaid → PR]
+    H -->|/user-flow| L[사용자 플로우\nuser-flow.mermaid → PR]
+    H -->|/logic-check| M[예외·테스트케이스\nlogic-check.md → PR ⚠️승인]
+    H -->|/release-note| N[변경사항 요약\nrelease-note.md → PR]
+    H -->|/git-project-sync| O
+
+    O[dry-run 제안 목록 출력\n근거 회의록 라인 포함]
+    O --> P{기획자 검토}
+    P -->|수정 요청| Q[코멘트로 수정 사항 전달]
+    Q --> O
+    P -->|전체 승인| R[--yes 실행\n이슈 생성 + Project 추가]
+    P -->|거절| S([종료 — 쓰기 없음])
+
+    R --> T[git-sync.json 저장\noutputs/날짜/]
+    T --> U[PR 완료 알림]
+
+    I --> U
+    J --> U
+    K --> U
+    L --> U
+    M --> U
+    N --> U
+
+    U --> V{다음 기획 필요?}
+    V -->|예| G
+    V -->|아니오| W([기획 루프 완료])

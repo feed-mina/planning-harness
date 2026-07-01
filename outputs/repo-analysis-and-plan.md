@@ -106,14 +106,22 @@ flowchart TB
 - [x] `templates/harness.config.env`, `PLUGIN.md` (설치/사용 가이드)
 - 설치: `claude plugin marketplace add feed-mina/planning-harness` → `install planning-harness@feed-mina-harness`
 
-### Phase 4 — 리모트 + 모바일 + 봇 (1일)
-- **GitHub Actions + Claude Code action**: 이슈/PR 코멘트에 `@claude ...` → 하네스 스킬 실행 → PR 생성 (모바일 GitHub 앱에서 그대로 트리거)
+### Phase 4 — 리모트 + 모바일 + 봇 ✅ 완료
+- [x] `.github/workflows/harness-bot.yml` — `issue_comment` 트리거, `anthropics/claude-code-action`, author_association 권한 체크
+- [x] `templates/harness-bot.yml` — 다운스트림 레포 설치용 복사 템플릿
 - 모든 변경은 **PR 승인 게이트**(kiba_2026 규율: main 직접 커밋 금지)
 - (선택) 홈랩에 **OpenCode 셀프호스트**로 모바일 웹 코딩 환경 — rsgm.dev 패턴
 
-### Phase 5 — 다운스트림 연결 검증 (반나절)
-- kiba_2026 프로젝트에 하네스 설치 → 기획→이슈→프로젝트→(배포)까지 1회 관통 테스트
-- `/release-note` 로 마무리, 진행 로그 페이지 갱신
+### Phase 5 — 다운스트림 연결 검증 ✅ 완료 (산출물 기준)
+- [x] `outputs/2026-07-01/kiba2026-docs-found.md` — 갭 분석 (설치 갭 3종 명시)
+- [x] `outputs/2026-07-01/kiba2026-spec.md` — kiba_2026 하네스 통합 SSOT
+- [x] `outputs/2026-07-01/kiba2026-requirements.md` — REQ-1~6 분해
+- [x] `outputs/2026-07-01/kiba2026-sequence.mermaid` — @claude 실행 시퀀스
+- [x] `outputs/2026-07-01/kiba2026-user-flow.mermaid` — 설치 → 스킬 → 승인 플로우
+- [x] `outputs/2026-07-01/kiba2026-logic-check.md` — 42종 테스트 케이스
+- [x] `outputs/2026-07-01/kiba2026-git-sync.json` — dry-run 제안 (이슈 3건)
+- [x] `outputs/2026-07-01/kiba2026-release-note.md` — v1.0.0 릴리즈 노트
+- **다음**: kiba_2026 에서 ANTHROPIC_API_KEY 시크릿 + `.harness/config.env` + harness-bot.yml 설치 후 첫 `@claude` 코멘트로 실제 관통 테스트
 
 ---
 

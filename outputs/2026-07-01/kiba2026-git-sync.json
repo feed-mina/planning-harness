@@ -1,0 +1,46 @@
+{
+  "project": "kiba_2026",
+  "date": "2026-07-01",
+  "mode": "dry-run",
+  "note": "이것은 dry-run 결과입니다. 승인 후 --yes 로 실제 이슈 생성이 진행됩니다.",
+  "proposed": [
+    {
+      "action": "이슈 생성",
+      "title": "기획 하네스 통합 — .harness/config.env 작성",
+      "labels": ["from-meeting", "todo"],
+      "assignee": "feed-mina",
+      "due": "2026-07-01",
+      "priority": "High",
+      "source": "outputs/2026-07-01/kiba2026-requirements.md REQ-2",
+      "status": "proposed"
+    },
+    {
+      "action": "이슈 생성",
+      "title": "기획 하네스 통합 — harness-bot.yml 설치",
+      "labels": ["from-meeting", "todo"],
+      "assignee": "feed-mina",
+      "due": "2026-07-01",
+      "priority": "High",
+      "source": "outputs/2026-07-01/kiba2026-requirements.md REQ-3",
+      "status": "proposed"
+    },
+    {
+      "action": "이슈 생성",
+      "title": "기획 하네스 통합 — /git-project-sync 첫 관통 테스트",
+      "labels": ["from-meeting", "todo"],
+      "assignee": "feed-mina",
+      "due": "2026-07-02",
+      "priority": "Medium",
+      "source": "outputs/2026-07-01/kiba2026-requirements.md REQ-4",
+      "status": "proposed"
+    },
+    {
+      "action": "Project 추가",
+      "title": "위 3개 이슈 → kiba_2026 Project V2 (Status=Todo)",
+      "status": "proposed"
+    }
+  ],
+  "skipped": [],
+  "created": [],
+  "instructions": "승인하려면 @claude /git-project-sync 2026-07-01 --yes 또는 '전체 승인' 코멘트를 이슈에 남겨주세요."
+}

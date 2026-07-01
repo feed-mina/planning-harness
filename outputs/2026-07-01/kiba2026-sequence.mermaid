@@ -1,0 +1,44 @@
+sequenceDiagram
+    actor 기획자
+    participant GitHub_App as GitHub 앱(모바일/웹)
+    participant HarnessBot as harness-bot.yml<br/>(GitHub Actions)
+    participant ClaudeAction as claude-code-action<br/>(AI 엔진)
+    participant CLAUDE_MD as CLAUDE.md<br/>+ .claude/commands/
+    participant Scripts as scripts/<br/>(gh CLI 엔진)
+    participant GitHub as GitHub API<br/>(Issues/Project)
+
+    Note over 기획자,GitHub: ① 설치 단계 (REQ-1 ~ REQ-3)
+    기획자->>GitHub_App: kiba_2026/.harness/config.env 작성<br/>(OWNER·PROJECT_NUMBER·REPO)
+    기획자->>GitHub_App: ANTHROPIC_API_KEY 시크릿 추가
+    기획자->>GitHub_App: harness-bot.yml 커밋 (templates/ 복사)
+
+    Note over 기획자,GitHub: ② @claude 스킬 실행 (REQ-3 ~ REQ-4)
+    기획자->>GitHub_App: 이슈 코멘트<br/>@claude /git-project-sync 2026-07-01
+    GitHub_App->>HarnessBot: issue_comment 이벤트 트리거
+    HarnessBot->>ClaudeAction: anthropic_api_key + checkout
+
+    ClaudeAction->>CLAUDE_MD: 컨텍스트 로드<br/>(규칙서 + 7개 스킬)
+    CLAUDE_MD-->>ClaudeAction: 가드레일 + /git-project-sync 명세
+
+    Note over ClaudeAction,Scripts: ③ dry-run 제안
+    ClaudeAction->>Scripts: bash scripts/create_issues.sh 2026-07-01<br/>(--yes 없이 dry-run)
+    Scripts->>GitHub: 이슈 제목 중복 확인 (읽기 전용)
+    GitHub-->>Scripts: 기존 이슈 목록
+    Scripts-->>ClaudeAction: 제안 목록 (생성/건너뜀)
+
+    ClaudeAction->>GitHub_App: PR 생성<br/>(outputs/2026-07-01/kiba2026-git-sync.json dry-run)
+    GitHub_App->>기획자: PR 알림
+
+    Note over 기획자,GitHub: ④ 승인 → 적용
+    기획자->>GitHub_App: PR 코멘트 "전체 승인"
+    GitHub_App->>HarnessBot: issue_comment 트리거 (승인 코멘트)
+    HarnessBot->>ClaudeAction: 재실행
+
+    ClaudeAction->>Scripts: bash scripts/create_issues.sh 2026-07-01 --yes
+    Scripts->>GitHub: 이슈 생성 (labels: from-meeting, todo)
+    GitHub-->>Scripts: 생성 완료 (URL)
+    Scripts->>GitHub: Project V2 카드 추가 (Status=Todo)
+    Scripts-->>ClaudeAction: git-sync.json (created/skipped)
+
+    ClaudeAction->>GitHub_App: PR 업데이트 (결과 보고)
+    GitHub_App->>기획자: 완료 알림
