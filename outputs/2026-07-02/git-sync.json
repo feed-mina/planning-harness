@@ -1,0 +1,9 @@
+{
+  "project": "@feed-mina's untitled project",
+  "created": [
+    {"title": "견적서 생성기 필수 입력값 검증 (거래처명·품목·금액 누락 시 생성 차단)", "url": "https://github.com/feed-mina/kiba_2026/issues/52"},
+    {"title": "견적서 금액 형식 검증 (숫자·천단위 콤마 허용, 음수·문자 차단, 오류 메시지)", "url": "https://github.com/feed-mina/kiba_2026/issues/53"}
+  ],
+  "skipped": [
+  ]
+}

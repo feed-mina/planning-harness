@@ -14,6 +14,7 @@
     saveKeys: $("btnSaveKeys"), clearKeys: $("btnClearKeys"),
     resultPanel: $("resultPanel"), markdown: $("markdown"), download: $("btnDownload"),
     copy: $("btnCopy"), fname: $("fname"),
+    mdPreview: $("mdPreview"), tabPreview: $("tabPreview"), tabEdit: $("tabEdit"),
   };
 
   // ---------- 초기값 ----------
@@ -212,11 +213,51 @@ ${actBlock}
 `;
   }
 
+  // ---------- 미리보기 렌더 (의존성 없는 최소 Markdown 렌더러) ----------
+  function esc(s) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+  function renderMarkdown(md) {
+    const lines = esc(md).split(/\r?\n/);
+    let html = "", inList = false, listCls = "";
+    const closeList = () => { if (inList) { html += "</ul>"; inList = false; } };
+    const openList = (cls) => { if (!inList || listCls !== cls) { closeList(); html += `<ul${cls ? ` class="${cls}"` : ""}>`; inList = true; listCls = cls; } };
+    for (let raw of lines) {
+      const line = raw.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/`([^`]+)`/g, "<code>$1</code>");
+      let m;
+      if (/^#\s+/.test(line)) { closeList(); html += `<div class="mp-h1">${line.replace(/^#\s+/, "")}</div>`; }
+      else if (/^##\s+/.test(line)) { closeList(); html += `<div class="mp-h2">${line.replace(/^##\s+/, "")}</div>`; }
+      else if (/^###\s+/.test(line)) { closeList(); html += `<h4>${line.replace(/^###\s+/, "")}</h4>`; }
+      else if ((m = line.match(/^[-*]\s+\[( |x|X)\]\s+(.*)$/))) {
+        openList("mp-tasks");
+        const done = m[1].toLowerCase() === "x";
+        html += `<li class="${done ? "done" : ""}"><input type="checkbox" disabled ${done ? "checked" : ""}><span>${m[2]}</span></li>`;
+      }
+      else if ((m = line.match(/^[-*]\s+(.*)$/))) { openList(""); html += `<li>${m[1]}</li>`; }
+      else if (line.trim() === "") { closeList(); }
+      else { closeList(); html += `<p>${line}</p>`; }
+    }
+    closeList();
+    return html;
+  }
+  function updatePreview() { el.mdPreview.innerHTML = renderMarkdown(el.markdown.value); }
+
+  // 편집 ↔ 미리보기 토글
+  function setView(edit) {
+    el.markdown.hidden = !edit;
+    el.mdPreview.hidden = edit;
+    el.tabEdit.classList.toggle("active", edit);
+    el.tabPreview.classList.toggle("active", !edit);
+    if (!edit) updatePreview();
+  }
+  el.tabEdit.addEventListener("click", () => setView(true));
+  el.tabPreview.addEventListener("click", () => setView(false));
+  el.markdown.addEventListener("input", updatePreview);
+
   function showResult(md) {
     const date = el.meetingDate.value || todayISO();
     el.markdown.value = md.trim() + "\n";
     el.resultPanel.hidden = false;
     el.fname.textContent = `${date}_meeting.md`;
+    setView(false);           // 기본은 미리보기(읽기 좋게), 편집 탭으로 직접 수정
     el.resultPanel.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 

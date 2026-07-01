@@ -82,8 +82,17 @@
 
     <!-- 5) 결과 -->
     <section class="panel" id="resultPanel" hidden>
-      <label class="field-label" for="markdown">회의록 Markdown</label>
-      <textarea id="markdown" rows="14" spellcheck="false"></textarea>
+      <div class="result-head">
+        <span class="field-label">회의록 <span class="editable-tag">(직접 수정 가능)</span></span>
+        <div class="view-toggle" role="tablist">
+          <button id="tabPreview" class="tab active" type="button" role="tab">👁 미리보기</button>
+          <button id="tabEdit" class="tab" type="button" role="tab">✏️ 편집</button>
+        </div>
+      </div>
+      <!-- 읽기용 렌더링 (요약·결정·할 일이 보기 좋게) -->
+      <div id="mdPreview" class="md-preview" aria-live="polite"></div>
+      <!-- 직접 수정 (전사 결과와 동일한 편집 방식) -->
+      <textarea id="markdown" rows="16" spellcheck="false" hidden></textarea>
       <div class="result-actions">
         <button id="btnDownload" class="btn btn-primary">⬇ .md 내려받기</button>
         <button id="btnCopy" class="btn btn-ghost">📋 복사</button>

@@ -112,9 +112,15 @@ flowchart TB
 - 모든 변경은 **PR 승인 게이트**(kiba_2026 규율: main 직접 커밋 금지)
 - (선택) 홈랩에 **OpenCode 셀프호스트**로 모바일 웹 코딩 환경 — rsgm.dev 패턴
 
-### Phase 5 — 다운스트림 연결 검증 (반나절)
-- kiba_2026 프로젝트에 하네스 설치 → 기획→이슈→프로젝트→(배포)까지 1회 관통 테스트
-- `/release-note` 로 마무리, 진행 로그 페이지 갱신
+### Phase 5 — 다운스트림 연결 검증 ✅ 완료
+- [x] kiba_2026 겨냥 `.harness/config.env` override (Project #1) — Phase 3 override 기법 실사용
+- [x] 견적서 검증 기능 기획(plan.md) + 회의록(할 일 2건)
+- [x] `/git-project-sync` dry-run → 승인 → `--yes` 로 **실제 이슈 2건 생성**
+  - [#52 필수 입력값 검증](https://github.com/feed-mina/kiba_2026/issues/52), [#53 금액 형식 검증](https://github.com/feed-mina/kiba_2026/issues/53) → Project #1 Status=Todo
+- [x] `/release-note` 마무리 (outputs/2026-07-01-kiba2026/release-note.md)
+- 산출물: outputs/2026-07-01-kiba2026/, git-sync 리포트 outputs/2026-07-02/git-sync.json
+
+> **P0~P5 전 단계 완료.** 웹 회의록 메이커(Pages) + 편집/미리보기 UI 포함.
 
 ---
 

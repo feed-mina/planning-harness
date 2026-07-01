@@ -14,3 +14,6 @@ __pycache__/
 # OS / editor
 .DS_Store
 Thumbs.db
+
+# Phase 5 로컬 override (프로젝트별 설정, 커밋 안 함)
+.harness/
