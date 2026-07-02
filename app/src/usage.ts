@@ -47,6 +47,29 @@ export async function checkQuota(env: Env, userId: string): Promise<QuotaState> 
   return { allowed: used < limit, used, limit };
 }
 
+// 최근 N일 사용량 시계열 — 일자별 비용/토큰 + provider별 비용 (통계 차트용).
+export async function getSeries(env: Env, userId: string, days = 14) {
+  const dayList: string[] = [];
+  for (let i = days - 1; i >= 0; i--) dayList.push(new Date(Date.now() - i * 86400000).toISOString().slice(0, 10));
+  const since = dayList[0];
+  const { results } = await env.DB.prepare(
+    `SELECT day, provider, SUM(cost_krw) AS cost, SUM(input_tokens + output_tokens) AS tokens
+     FROM usage_events WHERE user_id=? AND day>=? GROUP BY day, provider ORDER BY day`
+  ).bind(userId, since).all<{ day: string; provider: string; cost: number; tokens: number }>();
+
+  const byDay: Record<string, { cost: number; tokens: number }> = {};
+  for (const d of dayList) byDay[d] = { cost: 0, tokens: 0 };
+  const byProvider: Record<string, number> = {};
+  for (const r of results || []) {
+    if (byDay[r.day]) { byDay[r.day].cost += r.cost; byDay[r.day].tokens += r.tokens; }
+    byProvider[r.provider] = (byProvider[r.provider] || 0) + r.cost;
+  }
+  return {
+    days: dayList.map((d) => ({ day: d, cost: byDay[d].cost, tokens: byDay[d].tokens })),
+    providers: Object.entries(byProvider).map(([provider, cost]) => ({ provider, cost })),
+  };
+}
+
 export async function logUsage(
   env: Env, userId: string, provider: string, model: string, inTok: number, outTok: number
 ): Promise<number> {

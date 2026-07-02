@@ -1,7 +1,7 @@
 // 기획 하네스 회의록 앱 — Cloudflare Worker 진입점.
 // /api/* 만 이 Worker 가 처리(run_worker_first), 나머지는 Static Assets.
 import { summarize, type MeetingMeta } from "./ai";
-import { checkQuota, logUsage, getDailyCost, today } from "./usage";
+import { checkQuota, logUsage, getDailyCost, getSeries, today } from "./usage";
 import { getEffectiveSettings, settingsForApi, saveSettings, isLoggedIn } from "./settings";
 import { startGithubLogin, handleGithubCallback, logout } from "./auth";
 import { verifyJWT, parseCookies } from "./jwt";
@@ -58,6 +58,11 @@ export default {
         const used = await getDailyCost(env, userId, today());
         const limit = Number(env.DAILY_LIMIT_KRW || "500");
         return withCookie(json({ day: today(), used_krw: used, limit_krw: limit, remaining_krw: Math.max(0, limit - used) }));
+      }
+
+      if (path === "/api/usage/series" && request.method === "GET") {
+        const days = Math.min(90, Math.max(1, Number(url.searchParams.get("days")) || 14));
+        return withCookie(json(await getSeries(env, userId, days)));
       }
 
       // 설정(provider/model/커스텀 프롬프트)

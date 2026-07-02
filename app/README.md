@@ -28,6 +28,7 @@ app/
 | `GET /api/settings` | 현재 provider·model·custom_prompt(+기본 프롬프트 템플릿) |
 | `PUT /api/settings` | provider·model·custom_prompt 저장 (**로그인 필요**) |
 | `GET /api/usage` | 오늘 사용 비용/한도/잔여 |
+| `GET /api/usage/series?days=14` | 일자별 비용/토큰 + provider별 비용 (통계 차트) |
 | `GET /api/me` | 세션(로그인 여부) |
 | `GET /api/auth/github` · `/callback` · `/logout` | GitHub OAuth 로그인/콜백/로그아웃 |
 | `GET /api/health` | 헬스체크 |
@@ -42,6 +43,18 @@ app/
    - Homepage: `<APP_BASE_URL>`  ·  **Authorization callback URL: `<APP_BASE_URL>/api/auth/callback`**
 2. `wrangler.jsonc` 의 `vars.GITHUB_OAUTH_CLIENT_ID` 와 `vars.APP_BASE_URL` 채우기.
 3. `wrangler secret put GITHUB_OAUTH_CLIENT_SECRET`, `wrangler secret put JWT_SECRET`.
+
+## 배포 준비물 — 어디서 받나
+| 항목 | 발급처 | 비고 |
+|---|---|---|
+| Cloudflare 계정 + Wrangler | https://dash.cloudflare.com (가입) → `npx wrangler login` | 무료 플랜 가능 |
+| `ANTHROPIC_API_KEY` | https://console.anthropic.com → **API Keys** | Claude |
+| `OPENAI_API_KEY` | https://platform.openai.com/api-keys | codex(OpenAI) |
+| `GEMINI_API_KEY` | https://aistudio.google.com/apikey (Google AI Studio) | Gemini · 무료 티어 있음 |
+| `JWT_SECRET` | 직접 생성: `openssl rand -base64 32` | 세션 서명용 랜덤값 |
+| GitHub OAuth (CLIENT_ID/SECRET) | https://github.com/settings/developers → **New OAuth App** | 콜백 `<APP_BASE_URL>/api/auth/callback` |
+
+> 키가 없는 provider는 그 provider만 실패하고 나머지는 동작. Gemini만 있어도 기본 사용 가능.
 
 ## 배포 (최초 1회)
 ```bash
