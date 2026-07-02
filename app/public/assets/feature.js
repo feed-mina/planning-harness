@@ -128,6 +128,7 @@
     el.resultPanel.hidden = false;
     el.fname.textContent = `${el.date.value || todayISO()}_meeting.md`;
     setView(false);
+    if (window.__revealGitIssue) window.__revealGitIssue();
     el.resultPanel.scrollIntoView({ behavior: "smooth", block: "start" });
   }
   el.download.addEventListener("click", download);
@@ -163,4 +164,110 @@
       el.ai.disabled = false;
     }
   });
+
+  // ---- GitHub 이슈로 만들기 (로그인 시) ----
+  const gitEl = {
+    box: $("gitIssueBox"), guest: $("gitIssueGuest"),
+    repo: $("issRepo"), project: $("issProject"), assignee: $("issAssignee"),
+    make: $("btnMakeIssues"), status: $("issStatus"), result: $("issResult"), count: $("issTaskCount"),
+  };
+  let gitReady = false;
+
+  // 클라이언트 측 할 일 개수(서버 parseActionItems 와 동일 규칙의 근사치)
+  function countActionItems(md) {
+    const lines = md.split(/\r?\n/); let inSection = false, n = 0;
+    for (const line of lines) {
+      if (/^#{1,6}\s+.*할\s*일/.test(line)) { inSection = true; continue; }
+      if (inSection && /^#{1,6}\s+/.test(line)) break;
+      if (!inSection) continue;
+      const m = line.match(/^\s*[-*]\s*\[[ xX]?\]\s*(.+?)\s*$/);
+      if (m && m[1].trim() && !/^<.*>$/.test(m[1].trim())) n++;
+    }
+    return n;
+  }
+
+  function fillSel(sel, items, valueOf, labelOf, selected) {
+    const head = sel.querySelector('option[value=""]');
+    sel.innerHTML = "";
+    if (head) sel.appendChild(head);
+    for (const it of items) {
+      const o = document.createElement("option");
+      o.value = valueOf(it); o.textContent = labelOf(it);
+      sel.appendChild(o);
+    }
+    if (selected) sel.value = selected;
+  }
+
+  async function loadAssignees(repo) {
+    fillSel(gitEl.assignee, [], () => "", () => "");
+    if (!repo) return;
+    try {
+      const d = await fetch("/api/git/assignees?repo=" + encodeURIComponent(repo)).then((r) => r.json());
+      if (d.assignees) fillSel(gitEl.assignee, d.assignees, (a) => a.login, (a) => "@" + a.login);
+    } catch {}
+  }
+
+  async function initGitIssue() {
+    let me;
+    try { me = await fetch("/api/me").then((r) => r.json()); } catch { return; }
+    if (!me.loggedIn) { gitEl.guest.hidden = false; return; }
+    // 박스는 결과 생성(showResult) 후 __revealGitIssue 로 노출.
+    try {
+      const [rp, pj, df] = await Promise.all([
+        fetch("/api/git/repos").then((r) => r.json()),
+        fetch("/api/git/projects").then((r) => r.json()),
+        fetch("/api/git/defaults").then((r) => r.json()),
+      ]);
+      if (rp.relogin || rp.error) {
+        gitEl.guest.hidden = false;
+        gitEl.guest.innerHTML = 'GitHub 이슈 생성 권한이 없습니다. <a href="/api/auth/logout">로그아웃</a> 후 다시 로그인하세요.';
+        return;
+      }
+      fillSel(gitEl.repo, rp.repos || [], (r) => r.full_name, (r) => r.full_name + (r.private ? " 🔒" : ""), df.default_repo);
+      fillSel(gitEl.project, pj.projects || [], (p) => p.id, (p) => `${p.title} (#${p.number})`, df.default_project_id);
+      if (df.default_repo) await loadAssignees(df.default_repo);
+      gitEl.repo.addEventListener("change", () => loadAssignees(gitEl.repo.value));
+      gitEl.make.addEventListener("click", makeIssues);
+      gitReady = true;
+    } catch (e) {
+      gitEl.guest.hidden = false;
+      gitEl.guest.textContent = "git 목록 불러오기 실패: " + e.message;
+    }
+  }
+
+  window.__revealGitIssue = () => {
+    if (!gitReady) return;
+    gitEl.box.hidden = false;
+    gitEl.count.textContent = String(countActionItems(el.markdown.value));
+    gitEl.result.innerHTML = "";
+  };
+
+  async function makeIssues() {
+    const repo = gitEl.repo.value;
+    if (!repo) { gitEl.status.textContent = "대상 repo 를 선택하세요."; gitEl.status.classList.add("danger"); return; }
+    gitEl.status.textContent = "이슈 생성 중…"; gitEl.status.classList.remove("danger");
+    gitEl.make.disabled = true; gitEl.result.innerHTML = "";
+    const subject = (el.subject.value || "").trim();
+    const meetingTitle = `${el.date.value || todayISO()}${subject ? " " + subject : ""} 회의`;
+    try {
+      const res = await fetch("/api/git/issues", {
+        method: "POST", headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          repo, assignee: gitEl.assignee.value || undefined, projectId: gitEl.project.value || undefined,
+          markdown: el.markdown.value, meetingTitle,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+      gitEl.status.textContent = `✅ ${data.count}건 생성${data.from_action_items ? " (할 일 기준)" : " (회의록 요약 1건)"}`;
+      gitEl.result.innerHTML = (data.created || [])
+        .map((c) => `<li><a href="${c.url}" target="_blank" rel="noopener">#${c.number}</a> ${c.title.replace(/</g, "&lt;")}</li>`).join("");
+    } catch (err) {
+      gitEl.status.textContent = "❌ " + err.message; gitEl.status.classList.add("danger");
+    } finally {
+      gitEl.make.disabled = false;
+    }
+  }
+
+  initGitIssue();
 })();

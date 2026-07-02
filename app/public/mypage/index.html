@@ -50,8 +50,21 @@
           <span class="hint" id="saveStatus"></span>
         </div>
 
-        <div class="panel" style="margin-top:18px"><div class="field-label">기본 git 대상 <span class="badge-soon">M5</span></div>
-          <p class="hint">회의록→이슈 생성 시 기본 repo/project/담당. 다음 단계에서 이 폼에 추가.</p></div>
+        <div class="panel" style="margin-top:18px">
+          <div class="result-head">
+            <span class="field-label">기본 git 대상</span>
+            <button id="btnReloadGit" class="btn btn-ghost btn-small" type="button">↻ 목록 새로고침</button>
+          </div>
+          <p class="hint">회의록 → 이슈 생성 시 기본으로 채워질 repo / Project. 기능 페이지에서 그때그때 바꿀 수 있습니다.</p>
+          <div class="provider-row">
+            <label>repo <select id="gitRepo"><option value="">(선택 안 함)</option></select></label>
+            <label>Project <select id="gitProject"><option value="">(선택 안 함)</option></select></label>
+          </div>
+          <div class="result-actions">
+            <button id="btnSaveGit" class="btn btn-primary">기본 git 대상 저장</button>
+            <span class="hint" id="gitStatus"></span>
+          </div>
+        </div>
       </div>
       <p class="foot"><a href="https://github.com/feed-mina/planning-harness/issues/3">Epic #3</a></p>
     </div>

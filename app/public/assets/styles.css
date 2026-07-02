@@ -92,3 +92,12 @@ textarea { resize: vertical; }
 .foot a { color: var(--purple-dark); }
 .stat-num { font-size: 1.8rem; font-weight: 800; color: var(--purple-dark); }
 .badge-soon { font-size: .72rem; background: #fff3d6; color: #9a6b00; border-radius: 6px; padding: 2px 7px; font-weight: 700; }
+
+/* GitHub 이슈로 만들기 */
+.git-issue { border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; margin-top: 16px; background: #fbfaff; }
+.git-issue .field-label { color: var(--purple-dark); }
+.iss-result { list-style: none; margin: 10px 0 0; padding: 0; }
+.iss-result li { font-size: .9rem; padding: 5px 0; border-top: 1px dashed var(--line); }
+.iss-result li:first-child { border-top: none; }
+.iss-result a { color: var(--purple-dark); font-weight: 700; text-decoration: none; margin-right: 6px; }
+.danger { color: var(--danger); }

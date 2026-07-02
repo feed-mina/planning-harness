@@ -2,9 +2,10 @@
 // /api/* 만 이 Worker 가 처리(run_worker_first), 나머지는 Static Assets.
 import { summarize, type MeetingMeta } from "./ai";
 import { checkQuota, logUsage, getDailyCost, getSeries, today } from "./usage";
-import { getEffectiveSettings, settingsForApi, saveSettings, isLoggedIn } from "./settings";
+import { getEffectiveSettings, settingsForApi, saveSettings, isLoggedIn, gitDefaultsForApi, saveGitDefaults } from "./settings";
 import { startGithubLogin, handleGithubCallback, logout } from "./auth";
 import { verifyJWT, parseCookies } from "./jwt";
+import { getUserToken, listRepos, listAssignees, listProjects, createIssue, addToProject, parseActionItems } from "./git";
 
 export interface Env {
   ASSETS: Fetcher;
@@ -96,6 +97,74 @@ export default {
           usage: { input_tokens: result.inputTokens, output_tokens: result.outputTokens },
           cost_krw: cost, day_used_krw: q.used + cost, limit_krw: q.limit,
         }));
+      }
+
+      // ── M5 git 연동 (모두 로그인 필요, 저장된 OAuth 토큰 사용) ─────────────
+      if (path.startsWith("/api/git/")) {
+        if (!isLoggedIn(userId)) return withCookie(json({ error: "로그인이 필요합니다." }, { status: 401 }));
+
+        // git 기본 대상(repo/project) 조회·저장 — 토큰 불필요
+        if (path === "/api/git/defaults" && request.method === "GET")
+          return withCookie(json(await gitDefaultsForApi(env, userId)));
+        if (path === "/api/git/defaults" && request.method === "PUT") {
+          const body = (await request.json()) as any;
+          await saveGitDefaults(env, userId, body);
+          return withCookie(json(await gitDefaultsForApi(env, userId)));
+        }
+
+        const token = await getUserToken(env, userId);
+        if (!token) return withCookie(json({ error: "GitHub 권한이 없습니다. 로그아웃 후 다시 로그인하세요.", relogin: true }, { status: 403 }));
+
+        if (path === "/api/git/repos" && request.method === "GET")
+          return withCookie(json({ repos: await listRepos(token) }));
+
+        if (path === "/api/git/assignees" && request.method === "GET") {
+          const repo = url.searchParams.get("repo") || "";
+          const [owner, name] = repo.split("/");
+          if (!owner || !name) return withCookie(json({ error: "repo=owner/name 형식이 필요합니다." }, { status: 400 }));
+          return withCookie(json({ assignees: await listAssignees(token, owner, name) }));
+        }
+
+        if (path === "/api/git/projects" && request.method === "GET")
+          return withCookie(json({ projects: await listProjects(token) }));
+
+        // 회의록 → 이슈 생성(할 일 항목별) + 선택 시 Project 반영
+        if (path === "/api/git/issues" && request.method === "POST") {
+          const body = (await request.json()) as {
+            repo?: string; assignee?: string; projectId?: string; markdown?: string; meetingTitle?: string;
+          };
+          const [owner, name] = (body.repo || "").split("/");
+          if (!owner || !name) return withCookie(json({ error: "대상 repo(owner/name)를 선택하세요." }, { status: 400 }));
+          if (!body.markdown?.trim()) return withCookie(json({ error: "회의록 내용이 비어 있습니다." }, { status: 400 }));
+
+          const assignees = body.assignee ? [body.assignee] : undefined;
+          const items = parseActionItems(body.markdown);
+          const meetingTitle = (body.meetingTitle || "회의록").slice(0, 120);
+          const created: { title: string; number: number; url: string }[] = [];
+
+          // 할 일이 없으면 회의록 요약 1건을 이슈로.
+          const tasks = items.length
+            ? items.map((it) => ({
+                title: it.title.slice(0, 200),
+                body: `${meetingTitle} 에서 생성된 할 일.\n\n원문: \`${it.raw}\`` +
+                  (it.assignee ? `\n담당(회의록): ${it.assignee}` : "") +
+                  (it.due ? `\n마감: ${it.due}` : "") +
+                  (it.priority ? `\n우선순위: ${it.priority}` : "") +
+                  `\n\n---\n_기획 하네스 회의록 메이커에서 생성_`,
+              }))
+            : [{ title: meetingTitle.slice(0, 200), body: body.markdown.slice(0, 60000) }];
+
+          for (const t of tasks) {
+            const issue = await createIssue(token, owner, name, t.title, t.body, assignees);
+            if (body.projectId) {
+              try { await addToProject(token, body.projectId, issue.node_id); } catch { /* Project 반영 실패는 이슈 생성을 막지 않음 */ }
+            }
+            created.push({ title: t.title, number: issue.number, url: issue.url });
+          }
+          return withCookie(json({ created, count: created.length, from_action_items: items.length > 0 }));
+        }
+
+        return json({ error: "not found" }, { status: 404 });
       }
 
       return json({ error: "not found" }, { status: 404 });

@@ -12,6 +12,12 @@
       "runtimeExecutable": "python",
       "runtimeArgs": ["-m", "http.server", "5178", "--directory", "app/public"],
       "port": 5178
+    },
+    {
+      "name": "app-worker",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["wrangler", "dev", "-c", "app/wrangler.jsonc", "--local", "--port", "8788"],
+      "port": 8788
     }
   ]
 }

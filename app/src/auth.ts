@@ -3,6 +3,10 @@
 // GitHub OAuth App 콜백 URL: <APP_BASE_URL>/api/auth/callback
 import type { Env } from "./index";
 import { signJWT, sessionCookie, parseCookies } from "./jwt";
+import { encryptToken } from "./crypto";
+
+// 로그인/이슈 생성/Project 반영에 필요한 스코프.
+const OAUTH_SCOPE = "read:user repo project";
 
 const redirect = (loc: string, cookie?: string) => {
   const h = new Headers({ location: loc });
@@ -17,7 +21,7 @@ export function startGithubLogin(request: Request, env: Env): Response {
   const url = new URL("https://github.com/login/oauth/authorize");
   url.searchParams.set("client_id", env.GITHUB_OAUTH_CLIENT_ID);
   url.searchParams.set("redirect_uri", redirectUri);
-  url.searchParams.set("scope", "read:user");
+  url.searchParams.set("scope", OAUTH_SCOPE);
   url.searchParams.set("state", state);
   const stateCookie = `oauth_state=${state}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=600`;
   return redirect(url.toString(), stateCookie);
@@ -53,10 +57,13 @@ export async function handleGithubCallback(request: Request, env: Env): Promise<
   if (!gh.id) return new Response("사용자 조회 실패", { status: 400 });
 
   const userId = `gh:${gh.id}`;
+  // 액세스 토큰은 암호화 저장 — 이후 이슈/Project API 호출에 사용(M5).
+  const encToken = env.JWT_SECRET ? await encryptToken(tok.access_token, env.JWT_SECRET) : null;
+  const scope = typeof tok.scope === "string" ? tok.scope : OAUTH_SCOPE;
   await env.DB.prepare(
-    `INSERT INTO users (id, github_login, github_id, created_at) VALUES (?, ?, ?, ?)
-     ON CONFLICT(id) DO UPDATE SET github_login=excluded.github_login`
-  ).bind(userId, gh.login, gh.id, new Date().toISOString()).run();
+    `INSERT INTO users (id, github_login, github_id, gh_token, gh_scope, created_at) VALUES (?, ?, ?, ?, ?, ?)
+     ON CONFLICT(id) DO UPDATE SET github_login=excluded.github_login, gh_token=excluded.gh_token, gh_scope=excluded.gh_scope`
+  ).bind(userId, gh.login, gh.id, encToken, scope, new Date().toISOString()).run();
 
   // 3) 세션 발급
   const jwt = await signJWT({ sub: userId, login: gh.login }, env.JWT_SECRET);

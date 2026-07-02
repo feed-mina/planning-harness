@@ -37,6 +37,38 @@ export async function settingsForApi(env: Env, userId: string) {
   };
 }
 
+// 마이페이지 "기본 git 대상" 표시용.
+export async function gitDefaultsForApi(env: Env, userId: string) {
+  if (!isLoggedIn(userId)) return { default_repo: null, default_project_id: null, default_project_title: null };
+  const row = await env.DB.prepare(
+    "SELECT default_repo, default_project_id, default_project_title FROM settings WHERE user_id=?"
+  ).bind(userId).first<{ default_repo?: string; default_project_id?: string; default_project_title?: string }>();
+  return {
+    default_repo: row?.default_repo || null,
+    default_project_id: row?.default_project_id || null,
+    default_project_title: row?.default_project_title || null,
+  };
+}
+
+// git 컬럼만 갱신(AI 설정 컬럼은 건드리지 않음).
+export async function saveGitDefaults(
+  env: Env, userId: string,
+  body: { default_repo?: string | null; default_project_id?: string | null; default_project_title?: string | null }
+): Promise<void> {
+  const repo = body.default_repo && /^[\w.-]+\/[\w.-]+$/.test(body.default_repo) ? body.default_repo : null;
+  const projId = body.default_project_id ? String(body.default_project_id).slice(0, 100) : null;
+  const projTitle = body.default_project_title ? String(body.default_project_title).slice(0, 200) : null;
+  await env.DB.prepare(
+    `INSERT INTO settings (user_id, default_repo, default_project_id, default_project_title, updated_at)
+     VALUES (?, ?, ?, ?, ?)
+     ON CONFLICT(user_id) DO UPDATE SET
+       default_repo=excluded.default_repo,
+       default_project_id=excluded.default_project_id,
+       default_project_title=excluded.default_project_title,
+       updated_at=excluded.updated_at`
+  ).bind(userId, repo, projId, projTitle, new Date().toISOString()).run();
+}
+
 export async function saveSettings(
   env: Env, userId: string,
   body: { provider?: string; model?: string; custom_prompt?: string | null }

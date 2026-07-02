@@ -17,3 +17,6 @@ Thumbs.db
 
 # Phase 5 로컬 override (프로젝트별 설정, 커밋 안 함)
 .harness/
+
+# Cloudflare 로컬 dev 상태(루트에서 wrangler dev -c 실행 시 생성)
+/.wrangler/

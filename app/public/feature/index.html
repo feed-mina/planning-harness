@@ -68,7 +68,23 @@
           <button id="btnCopy" class="btn btn-ghost">📋 복사</button>
           <span class="fname" id="fname"></span>
         </div>
-        <p class="hint next">이 파일을 <code>meetings/summary/</code> 에 넣고 <code>/git-project-sync &lt;날짜&gt;</code> 로 이어가면 GitHub Issues·Project 반영. (repo/project/이슈 할당 선택은 M5 예정)</p>
+        <!-- GitHub 이슈로 만들기 (로그인 시) -->
+        <div id="gitIssueBox" class="git-issue" hidden>
+          <div class="field-label">GitHub 이슈로 만들기</div>
+          <p class="hint">회의록의 <code>## 할 일</code> 항목을 선택한 repo 에 이슈로 생성합니다.
+            <strong id="issTaskCount">0</strong>개 감지 · Project 선택 시 카드로 추가 · 담당(assignee) 선택 시 모든 이슈에 지정.</p>
+          <div class="provider-row">
+            <label>repo <select id="issRepo"><option value="">(선택)</option></select></label>
+            <label>Project (선택) <select id="issProject"><option value="">(선택 안 함)</option></select></label>
+            <label>담당 assignee (선택) <select id="issAssignee"><option value="">(지정 안 함)</option></select></label>
+          </div>
+          <div class="result-actions">
+            <button id="btnMakeIssues" class="btn btn-dark">이슈 생성</button>
+            <span class="hint" id="issStatus"></span>
+          </div>
+          <ul id="issResult" class="iss-result"></ul>
+        </div>
+        <p id="gitIssueGuest" class="hint next" hidden>회의록을 GitHub 이슈로 바로 만들려면 <a href="/api/auth/github">GitHub 로그인</a> 후 이 페이지로 돌아오세요.</p>
       </section>
 
       <p class="foot">정적 자산 + Cloudflare Worker 프록시 · 키는 서버 secret · <a href="https://github.com/feed-mina/planning-harness/issues/3">Epic #3</a></p>
