@@ -31,8 +31,22 @@
       $("btnResetPrompt").addEventListener("click", () => { $("prompt").value = defaultPrompt; });
       $("btnSaveSettings").addEventListener("click", save);
       initGit();
+      loadMeetings();
     });
   }).catch(() => { $("guest").hidden = false; });
+
+  // ---- 내 회의록 이력(M3) ----
+  async function loadMeetings() {
+    const box = $("myMeetings");
+    if (!box) return;
+    try {
+      const d = await fetch("/api/meetings?limit=30").then((r) => r.json());
+      if (d.error) { box.innerHTML = `<p class="hint danger">${d.error}</p>`; return; }
+      window.renderMeetingList(box, d.meetings);
+    } catch (e) {
+      box.innerHTML = '<p class="hint danger">불러오기 실패</p>';
+    }
+  }
 
   // ---- 기본 git 대상(repo/Project) ----
   function fillSelect(sel, items, valueOf, labelOf, selectedVal) {

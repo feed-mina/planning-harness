@@ -101,3 +101,13 @@ textarea { resize: vertical; }
 .iss-result li:first-child { border-top: none; }
 .iss-result a { color: var(--purple-dark); font-weight: 700; text-decoration: none; margin-right: 6px; }
 .danger { color: var(--danger); }
+
+/* 작은 버튼 */
+.btn-small { padding: 5px 10px; font-size: .82rem; }
+
+/* 회의록 이력 목록(대시보드·마이페이지) */
+.meeting-list { list-style: none; margin: 6px 0 0; padding: 0; }
+.meeting-list li { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-top: 1px solid var(--line); }
+.meeting-list li:first-child { border-top: none; }
+.meeting-list .mt-title { flex: 1; font-weight: 600; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.meeting-list .mt-date { font-size: .82rem; color: var(--muted); white-space: nowrap; }

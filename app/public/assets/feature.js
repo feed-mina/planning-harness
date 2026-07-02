@@ -157,7 +157,8 @@
       download(); // 요청: AI 요약 시 자동 다운로드
       if (window.refreshUsage) window.refreshUsage();
       const cost = data.cost_krw != null ? ` · 이번 요약 ${data.cost_krw.toFixed(2)}원` : "";
-      status(`✅ 회의록 생성·다운로드 완료 (${data.provider}/${data.model})${cost}`);
+      const saved = data.saved ? " · ☁️ 이력 저장됨(마이페이지)" : "";
+      status(`✅ 회의록 생성·다운로드 완료 (${data.provider}/${data.model})${cost}${saved}`);
     } catch (err) {
       status("❌ 실패: " + err.message, true);
     } finally {

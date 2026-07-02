@@ -6,6 +6,7 @@ import { getEffectiveSettings, settingsForApi, saveSettings, isLoggedIn, gitDefa
 import { startGithubLogin, handleGithubCallback, logout } from "./auth";
 import { verifyJWT, parseCookies } from "./jwt";
 import { getUserToken, listRepos, listAssignees, listProjects, createIssue, addToProject, parseActionItems } from "./git";
+import { saveMeeting, listMeetings, getMeeting } from "./meetings";
 
 export interface Env {
   ASSETS: Fetcher;
@@ -92,11 +93,36 @@ export default {
         };
         const result = await summarize(env, meta, settings);
         const cost = await logUsage(env, userId, result.provider, result.model, result.inputTokens, result.outputTokens);
+
+        // 로그인 사용자는 생성 회의록을 R2/D1 에 자동 저장(이력). 저장 실패는 요약을 막지 않음.
+        let meetingId: string | undefined;
+        if (isLoggedIn(userId)) {
+          try {
+            const title = body.subject?.trim() ? body.subject.trim() : `${body.date} 회의`;
+            const saved = await saveMeeting(env, userId, { title, date: body.date, markdown: result.markdown });
+            meetingId = saved.id;
+          } catch { /* 이력 저장 실패는 무시 */ }
+        }
         return withCookie(json({
           markdown: result.markdown, provider: result.provider, model: result.model,
           usage: { input_tokens: result.inputTokens, output_tokens: result.outputTokens },
           cost_krw: cost, day_used_krw: q.used + cost, limit_krw: q.limit,
+          meeting_id: meetingId ?? null, saved: !!meetingId,
         }));
+      }
+
+      // ── M3 회의록 이력 (로그인 필요) ──────────────────────────────────────
+      if (path === "/api/meetings" && request.method === "GET") {
+        if (!isLoggedIn(userId)) return withCookie(json({ error: "로그인이 필요합니다." }, { status: 401 }));
+        const limit = Number(url.searchParams.get("limit")) || 20;
+        return withCookie(json({ meetings: await listMeetings(env, userId, limit) }));
+      }
+      const meetingMatch = path.match(/^\/api\/meetings\/([\w-]+)$/);
+      if (meetingMatch && request.method === "GET") {
+        if (!isLoggedIn(userId)) return withCookie(json({ error: "로그인이 필요합니다." }, { status: 401 }));
+        const m = await getMeeting(env, userId, meetingMatch[1]);
+        if (!m) return withCookie(json({ error: "회의록을 찾을 수 없습니다." }, { status: 404 }));
+        return withCookie(json(m));
       }
 
       // ── M5 git 연동 (모두 로그인 필요, 저장된 OAuth 토큰 사용) ─────────────
