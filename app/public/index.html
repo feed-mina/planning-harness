@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>대시보드 — 회의록 메이커</title>
+  <link rel="stylesheet" href="/assets/styles.css" />
+</head>
+<body data-page="dashboard">
+  <div class="wrap">
+    <div class="card">
+      <h1>대시보드</h1>
+      <p class="lead">녹음·자막에서 회의록을 만들고, 사용량과 이력을 한눈에. AI provider는 서버에 키가 세팅돼 있어 <strong>선택만</strong> 하면 됩니다.</p>
+
+      <div class="grid2">
+        <div class="panel">
+          <div class="field-label">오늘 사용량</div>
+          <div class="usage-pill" data-usage>…</div>
+          <p class="hint">provider 호출 토큰 기반, 일 한도 초과 시 자동 차단.</p>
+        </div>
+        <div class="panel">
+          <div class="field-label">빠른 시작</div>
+          <a class="btn btn-primary btn-block" href="/feature/">＋ 회의록 만들기</a>
+          <a class="btn btn-ghost btn-block" href="/stats/">사용량 통계 보기</a>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="field-label">최근 회의록 <span class="badge-soon">M3 예정</span></div>
+        <p class="hint">회의록 저장·이력은 R2/D1 연동(M3) 후 여기에 표시됩니다.</p>
+      </div>
+
+      <p class="foot">기획 하네스 · Cloudflare Workers · <a href="https://github.com/feed-mina/planning-harness/issues/3">Epic #3</a></p>
+    </div>
+  </div>
+  <script src="/assets/common.js"></script>
+</body>
+</html>

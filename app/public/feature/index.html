@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>회의록 만들기 — 회의록 메이커</title>
+  <link rel="stylesheet" href="/assets/styles.css" />
+</head>
+<body data-page="feature">
+  <div class="wrap">
+    <div class="card">
+      <h1>녹음·자막 파일로 회의록 만들기</h1>
+      <p class="lead">녹음 또는 Teams 자막을 넣고 <strong>AI provider만 선택</strong>하면 요약·결정·할 일 회의록을
+        만들어 내려받습니다. API 키는 서버에 있으니 입력할 필요가 없습니다. <span class="usage-pill" data-usage>…</span></p>
+
+      <!-- 녹음 -->
+      <section class="panel">
+        <div class="rec-row">
+          <button id="btnRecStart" class="btn btn-primary">녹음 시작</button>
+          <button id="btnRecStop" class="btn btn-coral" disabled>녹음 종료</button>
+          <span id="timer" class="timer">00:00</span>
+          <span id="recDot" class="rec-dot" hidden></span>
+        </div>
+        <p class="hint" id="speechSupport"></p>
+      </section>
+
+      <!-- 파일 -->
+      <section class="dropzone" id="dropzone" tabindex="0" role="button">
+        <div class="mic">🎙️</div>
+        <div class="dz-title">녹음 또는 자막 파일 선택</div>
+        <div class="dz-sub">여기를 누르면 폴더가 열립니다. (.vtt · .srt · .txt · 오디오)</div>
+        <input type="file" id="fileInput" accept=".vtt,.srt,.txt,audio/*" hidden />
+      </section>
+
+      <!-- 녹음텍스트 -->
+      <section class="panel">
+        <label class="field-label" for="transcript">녹음텍스트로 바꾸기 <span class="editable-tag">(직접 수정 가능)</span></label>
+        <textarea id="transcript" rows="7" placeholder="자막 파일을 선택하거나 녹음을 시작하면 여기에 텍스트가 채워집니다."></textarea>
+        <div class="meta-grid">
+          <label class="req">회의 날짜<input type="date" id="meetingDate" /></label>
+          <label>회의 시간 (선택)<input type="time" id="meetingTime" /></label>
+          <label>참석자 (선택)<input type="text" id="attendees" placeholder="@홍길동, @김철수" /></label>
+          <label>회의 주제 (선택)<input type="text" id="subject" placeholder="예: 주간 운영회의" /></label>
+        </div>
+      </section>
+
+      <!-- 생성 -->
+      <section class="panel">
+        <p class="hint" id="providerNote">AI provider: <strong id="curProvider">Gemini</strong> · 모델 <span id="curModel">gemini-2.5-pro</span>
+          — 변경/커스텀 프롬프트는 <a href="/mypage/">마이페이지</a>에서.</p>
+        <button id="btnAI" class="btn btn-dark btn-block">AI 요약 → 회의록 생성 &amp; 다운로드</button>
+        <p class="hint" id="genStatus">회의 날짜는 필수입니다. AI 요약을 누르면 요약본이 미리보기에 뜨고 자동으로 내려받아집니다.</p>
+      </section>
+
+      <!-- 결과 -->
+      <section class="panel" id="resultPanel" hidden>
+        <div class="result-head">
+          <span class="field-label">회의록 <span class="editable-tag">(직접 수정 가능)</span></span>
+          <div class="view-toggle">
+            <button id="tabPreview" class="tab-btn active" type="button">👁 미리보기</button>
+            <button id="tabEdit" class="tab-btn" type="button">✏️ 편집</button>
+          </div>
+        </div>
+        <div id="mdPreview" class="md-preview"></div>
+        <textarea id="markdown" rows="16" spellcheck="false" hidden></textarea>
+        <div class="result-actions">
+          <button id="btnDownload" class="btn btn-primary">⬇ .md 다시 내려받기</button>
+          <button id="btnCopy" class="btn btn-ghost">📋 복사</button>
+          <span class="fname" id="fname"></span>
+        </div>
+        <p class="hint next">이 파일을 <code>meetings/summary/</code> 에 넣고 <code>/git-project-sync &lt;날짜&gt;</code> 로 이어가면 GitHub Issues·Project 반영. (repo/project/이슈 할당 선택은 M5 예정)</p>
+      </section>
+
+      <p class="foot">정적 자산 + Cloudflare Worker 프록시 · 키는 서버 secret · <a href="https://github.com/feed-mina/planning-harness/issues/3">Epic #3</a></p>
+    </div>
+  </div>
+  <script src="/assets/common.js"></script>
+  <script src="/assets/feature.js"></script>
+</body>
+</html>

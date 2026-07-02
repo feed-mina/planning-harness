@@ -1,0 +1,43 @@
+{
+  // 기획 하네스 — 회의록 메이커 Cloudflare 앱 (Epic #3)
+  // 배포 전: `wrangler d1 create`, `wrangler r2 bucket create`, secret 설정 → app/README.md 참고
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "harness-meeting-app",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-04-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+
+  // 멀티페이지 정적 자산 — /api/* 만 Worker 가 먼저 처리, 나머지는 정적 서빙
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page",
+    "run_worker_first": ["/api/*"]
+  },
+
+  // D1 — 사용자·사용량·회의록 메타·설정 (database_id 는 `wrangler d1 create` 후 채움)
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "harness-meeting-db",
+      "database_id": "REPLACE_AFTER_d1_create",
+      "migrations_dir": "migrations"
+    }
+  ],
+
+  // R2 — 회의록 .md / 오디오 원본
+  "r2_buckets": [
+    { "binding": "R2", "bucket_name": "harness-meetings" }
+  ],
+
+  // 비민감 설정값 (키는 secret 으로 별도 — wrangler secret put)
+  "vars": {
+    "DAILY_LIMIT_KRW": "500",
+    "GITHUB_OAUTH_CLIENT_ID": "",
+    "APP_BASE_URL": "https://harness-meeting-app.workers.dev"
+  }
+  // Secrets (wrangler secret put): ANTHROPIC_API_KEY, OPENAI_API_KEY, GEMINI_API_KEY,
+  //                                GITHUB_OAUTH_CLIENT_SECRET, JWT_SECRET
+}
